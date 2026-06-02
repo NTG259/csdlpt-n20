@@ -1,6 +1,6 @@
 # Hệ thống bán hàng đa kho phân tán — CSDL Phân Tán (Nhóm 20)
 
-Đồ án môn **Cơ sở dữ liệu phân tán**: xây dựng một hệ thống thương mại điện tử bán hàng
+Bài tập lớn môn **Cơ sở dữ liệu phân tán**: xây dựng một hệ thống thương mại điện tử bán hàng
 nhiều kho, dữ liệu được **phân mảnh ngang theo khu vực địa lý** (Miền Bắc / Miền Nam) và
 đặt trên các site SQL Server khác nhau. Mỗi miền tự xử lý đơn hàng, tồn kho, xuất/nhập kho
 của mình; site trung tâm chịu trách nhiệm danh mục dùng chung, quản trị và **tổng hợp dữ
@@ -85,7 +85,7 @@ ghi chú rõ ràng (`-- Không tạo FK vì ... có thể nằm ở site khác`)
 
 ```
 csdlpt-n20/
-├── BÁO CÁO BTL N20 bản chính.docx / .pdf   # Báo cáo đồ án
+├── BÁO CÁO BTL N20 bản chính.docx / .pdf   # Báo cáo bài tập lớn
 ├── Dữ liệu mẫu/                            # Dữ liệu mẫu để seed CSDL
 │   ├── 1. Khu vực - 2 bản ghi.txt
 │   ├── 2. Người dùng - 1000 bản ghi.txt
@@ -301,4 +301,4 @@ cd src/fe && docker compose up -d --build
 
 ---
 
-*Đồ án môn Cơ sở dữ liệu phân tán — Nhóm 20.*
+*Bài tập lớn môn Cơ sở dữ liệu phân tán — Nhóm 20.*
