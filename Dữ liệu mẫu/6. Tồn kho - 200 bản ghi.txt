@@ -1,0 +1,179 @@
+-- =========================================================
+-- SINH LAI DU LIEU TON KHO CHO 20 SAN PHAM SP001 -> SP020
+-- AP DUNG VOI 10 KHO: KB01..KB05, KN01..KN05
+-- KET QUA: 20 SAN PHAM * 10 KHO = 200 DONG TONKHO
+-- =========================================================
+
+SET NOCOUNT ON;
+SET XACT_ABORT ON;
+
+BEGIN TRY
+    BEGIN TRANSACTION;
+
+    -- =========================================================
+    -- 1. KIEM TRA DU LIEU NEN
+    -- =========================================================
+
+    IF NOT EXISTS (SELECT 1 FROM Kho WHERE TrangThai = 1)
+    BEGIN
+        THROW 55001, N'Chưa có kho đang hoạt động trong bảng Kho.', 1;
+    END;
+
+    IF (
+        SELECT COUNT(*)
+        FROM SanPham_Core
+        WHERE MaSP BETWEEN 'SP001' AND 'SP020'
+    ) < 20
+    BEGIN
+        THROW 55002, N'Chưa đủ 20 sản phẩm SP001 đến SP020 trong bảng SanPham_Core.', 1;
+    END;
+
+    -- =========================================================
+    -- 2. XOA TON KHO CU CUA 20 SAN PHAM MAU
+    -- =========================================================
+    -- Chỉ xóa tồn kho của SP001 -> SP020, không xóa toàn bộ bảng TonKho.
+    -- Nếu bạn muốn reset toàn bộ tồn kho, dùng: DELETE FROM TonKho;
+
+    DELETE FROM TonKho
+    WHERE MaSP BETWEEN 'SP001' AND 'SP020';
+
+    -- =========================================================
+    -- 3. SINH LAI TON KHO
+    -- =========================================================
+
+    INSERT INTO TonKho
+    (
+        MaKho,
+        MaSP,
+        SoLuongTon,
+        SoLuongDatHang,
+        NgayCapNhat
+    )
+    SELECT
+        k.MaKho,
+        sp.MaSP,
+
+        -- SoLuongTon
+        CASE
+            -- SP001: Bắc nhiều hàng, Nam ít hàng
+            WHEN sp.MaSP = 'SP001' AND k.MaKhuVuc = 'Bac' THEN 50
+            WHEN sp.MaSP = 'SP001' AND k.MaKhuVuc = 'Nam' THEN 10
+
+            -- SP002: Bắc thiếu ít, Nam nhiều hàng
+            WHEN sp.MaSP = 'SP002' AND k.MaKhuVuc = 'Bac' THEN 2
+            WHEN sp.MaSP = 'SP002' AND k.MaKhuVuc = 'Nam' THEN 60
+
+            -- SP003: Hết hàng toàn hệ thống
+            WHEN sp.MaSP = 'SP003' THEN 0
+
+            -- SP004: Mỗi kho có ít hàng, test gom nhiều kho
+            WHEN sp.MaSP = 'SP004' THEN 3
+
+            -- SP005: Bắc còn hàng nhưng đã bị đặt gần hết
+            WHEN sp.MaSP = 'SP005' AND k.MaKhuVuc = 'Bac' THEN 20
+            WHEN sp.MaSP = 'SP005' AND k.MaKhuVuc = 'Nam' THEN 30
+
+            -- SP006: Laptop gaming, số lượng thấp
+            WHEN sp.MaSP = 'SP006' THEN 
+                CASE 
+                    WHEN k.MaKho IN ('KB01', 'KN01') THEN 8
+                    ELSE 4
+                END
+
+            -- SP007: Có đều ở các kho
+            WHEN sp.MaSP = 'SP007' THEN 25
+
+            -- SP008: Tai nghe cao cấp, tồn vừa
+            WHEN sp.MaSP = 'SP008' THEN 15
+
+            -- SP009: Tai nghe phổ thông, tồn nhiều
+            WHEN sp.MaSP = 'SP009' THEN 80
+
+            -- SP010: Áo thun, tồn nhiều
+            WHEN sp.MaSP = 'SP010' THEN 120
+
+            -- SP011: Giày, tồn vừa
+            WHEN sp.MaSP = 'SP011' THEN 40
+
+            -- SP012: Balo, tồn vừa
+            WHEN sp.MaSP = 'SP012' THEN 35
+
+            -- SP013: Nồi cơm điện, tồn vừa
+            WHEN sp.MaSP = 'SP013' THEN 30
+
+            -- SP014: Máy xay, tồn vừa
+            WHEN sp.MaSP = 'SP014' THEN 25
+
+            -- SP015: Bình giữ nhiệt, tồn nhiều
+            WHEN sp.MaSP = 'SP015' THEN 100
+
+            -- SP016: Sách Java, tồn nhiều
+            WHEN sp.MaSP = 'SP016' THEN 150
+
+            -- SP017: Sách TOEIC, tồn nhiều
+            WHEN sp.MaSP = 'SP017' THEN 130
+
+            -- SP018: Bóng đá, tồn vừa
+            WHEN sp.MaSP = 'SP018' THEN 45
+
+            -- SP019: Thảm yoga, tồn vừa
+            WHEN sp.MaSP = 'SP019' THEN 55
+
+            -- SP020: Sữa rửa mặt, tồn nhiều
+            WHEN sp.MaSP = 'SP020' THEN 90
+
+            ELSE 10
+        END AS SoLuongTon,
+
+        -- SoLuongDatHang
+        CASE
+            -- SP001: có một ít hàng đang được đặt
+            WHEN sp.MaSP = 'SP001' AND k.MaKhuVuc = 'Bac' THEN 5
+            WHEN sp.MaSP = 'SP001' AND k.MaKhuVuc = 'Nam' THEN 2
+
+            -- SP002: Bắc gần như bị đặt hết, Nam còn nhiều
+            WHEN sp.MaSP = 'SP002' AND k.MaKhuVuc = 'Bac' THEN 1
+            WHEN sp.MaSP = 'SP002' AND k.MaKhuVuc = 'Nam' THEN 10
+
+            -- SP003: hết hàng nên đặt hàng = 0
+            WHEN sp.MaSP = 'SP003' THEN 0
+
+            -- SP004: mỗi kho có 3, đã đặt 1, khả dụng còn 2
+            WHEN sp.MaSP = 'SP004' THEN 1
+
+            -- SP005: Bắc bị đặt gần hết
+            WHEN sp.MaSP = 'SP005' AND k.MaKhuVuc = 'Bac' THEN 18
+            WHEN sp.MaSP = 'SP005' AND k.MaKhuVuc = 'Nam' THEN 5
+
+            -- Các sản phẩm còn lại: đặt trước một phần nhỏ
+            WHEN sp.MaSP IN ('SP006', 'SP007', 'SP008') THEN 2
+            WHEN sp.MaSP IN ('SP009', 'SP010', 'SP015', 'SP016', 'SP017', 'SP020') THEN 10
+            WHEN sp.MaSP IN ('SP011', 'SP012', 'SP013', 'SP014', 'SP018', 'SP019') THEN 5
+
+            ELSE 0
+        END AS SoLuongDatHang,
+
+        SYSDATETIME() AS NgayCapNhat
+
+    FROM Kho k
+    CROSS JOIN SanPham_Core sp
+    WHERE k.TrangThai = 1
+      AND sp.MaSP BETWEEN 'SP001' AND 'SP020';
+
+    COMMIT TRANSACTION;
+
+    PRINT N'Đã sinh lại dữ liệu TonKho cho 20 sản phẩm thành công.';
+
+END TRY
+BEGIN CATCH
+    IF @@TRANCOUNT > 0
+        ROLLBACK TRANSACTION;
+
+    DECLARE @ErrMsg NVARCHAR(4000) = ERROR_MESSAGE();
+    DECLARE @ErrSeverity INT = ERROR_SEVERITY();
+    DECLARE @ErrState INT = ERROR_STATE();
+
+    RAISERROR(@ErrMsg, @ErrSeverity, @ErrState);
+END CATCH;
+GO
+
