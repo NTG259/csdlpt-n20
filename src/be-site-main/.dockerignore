@@ -1,0 +1,11 @@
+.git
+.gradle
+build
+bin
+.vscode
+*.log
+bootrun.*.log
+.env
+.env.*
+HELP.md
+docs

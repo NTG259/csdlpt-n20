@@ -62,6 +62,66 @@ public final class SqlServerErrorTranslator {
                 "Loi xu ly don hang");
     }
 
+    public static BusinessException translateWarehouse(DataAccessException ex) {
+        String message = extractMessage(ex);
+        String normalized = message.toLowerCase(Locale.ROOT);
+
+        if (normalized.contains("msdtc")
+                || normalized.contains("distributed transaction")
+                || normalized.contains("linked server")
+                || normalized.contains("ole db")
+                || normalized.contains("[link]")) {
+            return business(ErrorCodes.DISTRIBUTED_TRANSACTION_ERROR, HttpStatus.SERVICE_UNAVAILABLE,
+                    "Loi giao dich phan tan hoac linked server");
+        }
+
+        if (normalized.contains("khong tim thay phieu")
+                || normalized.contains("khÃƒÂ´ng tÃƒÂ¬m thÃ¡ÂºÂ¥y phiÃ¡ÂºÂ¿u")
+                || normalized.contains("khÃ´ng tÃ¬m tháº¥y phiáº¿u")) {
+            return business(ErrorCodes.SLIP_NOT_FOUND, HttpStatus.NOT_FOUND,
+                    "Khong tim thay phieu");
+        }
+
+        if (normalized.contains("chua gom")
+                || normalized.contains("chua co du hang")
+                || normalized.contains("khong the tao phieu xuat giao khach")
+                || normalized.contains("xuat giao khach")
+                || normalized.contains("chÆ°a gom")
+                || normalized.contains("chÆ°a cÃ³ Ä‘á»§ hÃ ng")) {
+            return business(ErrorCodes.ORDER_NOT_READY_TO_SHIP, HttpStatus.CONFLICT,
+                    "Don hang chua san sang giao khach");
+        }
+
+        if (normalized.contains("khong du")
+                || normalized.contains("khÃƒÂ´ng Ã„â€˜Ã¡Â»Â§")
+                || normalized.contains("khÃ´ng Ä‘á»§")
+                || normalized.contains("tá»“n kho")) {
+            return business(ErrorCodes.OUT_OF_STOCK, HttpStatus.CONFLICT,
+                    "Ton kho khong du de thao tac");
+        }
+
+        if (normalized.contains("chi duoc xac nhan")
+                || normalized.contains("chÃ¡Â»â€° Ã„â€˜Ã†Â°Ã¡Â»Â£c xÃƒÂ¡c nhÃ¡ÂºÂ­n")
+                || normalized.contains("chua exported")
+                || normalized.contains("chÆ°a exported")
+                || normalized.contains("waiting_export")
+                || normalized.contains("waiting_import")) {
+            return business(ErrorCodes.INVALID_SLIP_STATUS, HttpStatus.CONFLICT,
+                    "Phieu khong o trang thai cho phep thao tac");
+        }
+
+        if (normalized.contains("kho")
+                && (normalized.contains("khong hop le")
+                || normalized.contains("khÃ´ng há»£p lá»‡")
+                || normalized.contains("khÃ´ng há»£p lá»‡"))) {
+            return business(ErrorCodes.WAREHOUSE_SCOPE_DENIED, HttpStatus.FORBIDDEN,
+                    "Kho khong hop le cho thao tac nay");
+        }
+
+        return business(ErrorCodes.INTERNAL_ERROR, HttpStatus.INTERNAL_SERVER_ERROR,
+                "Loi xu ly kho");
+    }
+
     private static String extractMessage(DataAccessException ex) {
         Throwable cause = mostSpecificCause(ex);
         if (cause != null && cause.getMessage() != null) {

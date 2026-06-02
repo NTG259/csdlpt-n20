@@ -9,6 +9,7 @@ export interface ApiFetchOptions extends Omit<RequestInit, "body"> {
   token?: string | null
   body?: unknown
   query?: Record<string, QueryValue>
+  logoutOnUnauthorized?: boolean
 }
 
 function buildUrl(
@@ -73,7 +74,15 @@ export async function apiFetch<T>(
   path: string,
   options: ApiFetchOptions
 ): Promise<T> {
-  const { baseUrl, token, body, query, headers, ...rest } = options
+  const {
+    baseUrl,
+    token,
+    body,
+    query,
+    headers,
+    logoutOnUnauthorized = true,
+    ...rest
+  } = options
   const hasBody = body !== undefined
 
   const response = await fetch(buildUrl(baseUrl, path, query), {
@@ -90,7 +99,7 @@ export async function apiFetch<T>(
 
   const errorResponse = parsed && !parsed.success ? parsed : null
 
-  if (response.status === 401 && token) {
+  if (logoutOnUnauthorized && response.status === 401 && token) {
     emitUnauthorized()
   }
 

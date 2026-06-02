@@ -5,6 +5,7 @@ import Link from "next/link"
 import {
   ClipboardListIcon,
   EyeIcon,
+  PackageCheckIcon,
   PackageIcon,
   RotateCcwIcon,
   ShoppingCartIcon,
@@ -19,11 +20,13 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useAuth } from "@/features/auth/auth-context"
+import { useConfirmReceived } from "@/features/orders/use-confirm-received"
 import { useOrderDetail, useOrders } from "@/features/orders/use-orders"
 import { formatVnd } from "@/lib/format"
 import { cn } from "@/lib/utils"
@@ -82,9 +85,13 @@ function OrdersSkeleton() {
 function OrderCard({
   order,
   onView,
+  onConfirmReceived,
+  confirmPending,
 }: {
   order: DonHangSummary
   onView: (maDonHang: string) => void
+  onConfirmReceived: (order: DonHangSummary) => void
+  confirmPending: boolean
 }) {
   return (
     <Card>
@@ -111,10 +118,22 @@ function OrderCard({
 
         <div className="grid gap-3 sm:min-w-44 sm:justify-items-end">
           <p className="text-lg font-semibold">{formatVnd(order.tongTien)}</p>
-          <Button type="button" variant="outline" onClick={() => onView(order.maDonHang)}>
-            <EyeIcon className="size-4" />
-            Xem chi tiet
-          </Button>
+          <div className="flex flex-wrap gap-2 sm:justify-end">
+            {order.trangThaiDH === "shipping" ? (
+              <Button
+                type="button"
+                disabled={confirmPending}
+                onClick={() => onConfirmReceived(order)}
+              >
+                <PackageCheckIcon className="size-4" />
+                {confirmPending ? "Dang xac nhan" : "Da nhan hang"}
+              </Button>
+            ) : null}
+            <Button type="button" variant="outline" onClick={() => onView(order.maDonHang)}>
+              <EyeIcon className="size-4" />
+              Xem chi tiet
+            </Button>
+          </div>
         </div>
       </CardContent>
     </Card>
@@ -125,10 +144,14 @@ function OrderDetailDialog({
   maDonHang,
   open,
   onOpenChange,
+  onConfirmReceived,
+  confirmPending,
 }: {
   maDonHang: string | null
   open: boolean
   onOpenChange: (open: boolean) => void
+  onConfirmReceived: (order: DonHang) => void
+  confirmPending: boolean
 }) {
   const detailQuery = useOrderDetail(maDonHang)
   const order = detailQuery.data
@@ -155,14 +178,26 @@ function OrderDetailDialog({
               : "Khong tai duoc chi tiet don hang."}
           </p>
         ) : order ? (
-          <OrderDetailContent order={order} />
+          <OrderDetailContent
+            order={order}
+            onConfirmReceived={onConfirmReceived}
+            confirmPending={confirmPending}
+          />
         ) : null}
       </DialogContent>
     </Dialog>
   )
 }
 
-function OrderDetailContent({ order }: { order: DonHang }) {
+function OrderDetailContent({
+  order,
+  onConfirmReceived,
+  confirmPending,
+}: {
+  order: DonHang
+  onConfirmReceived: (order: DonHang) => void
+  confirmPending: boolean
+}) {
   return (
     <div className="grid gap-4">
       <div className="grid gap-2 rounded-lg border bg-muted/30 p-3 text-sm">
@@ -204,20 +239,87 @@ function OrderDetailContent({ order }: { order: DonHang }) {
         ))}
       </div>
 
-      <div className="flex items-center justify-between border-t pt-3 text-base font-semibold">
-        <span>Tong tien</span>
-        <span>{formatVnd(order.tongTien)}</span>
+      <div className="flex flex-wrap items-center justify-between gap-3 border-t pt-3">
+        <div className="text-base font-semibold">
+          <span>Tong tien</span>{" "}
+          <span>{formatVnd(order.tongTien)}</span>
+        </div>
+        {order.trangThaiDH === "shipping" ? (
+          <Button
+            type="button"
+            disabled={confirmPending}
+            onClick={() => onConfirmReceived(order)}
+          >
+            <PackageCheckIcon className="size-4" />
+            {confirmPending ? "Dang xac nhan" : "Da nhan hang"}
+          </Button>
+        ) : null}
       </div>
     </div>
+  )
+}
+
+function ConfirmReceivedDialog({
+  order,
+  open,
+  pending,
+  onOpenChange,
+  onConfirm,
+}: {
+  order: DonHang | DonHangSummary | null
+  open: boolean
+  pending: boolean
+  onOpenChange: (open: boolean) => void
+  onConfirm: () => void
+}) {
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Xac nhan da nhan hang</DialogTitle>
+          <DialogDescription>
+            {order
+              ? `Xac nhan ban da nhan don ${order.maDonHang}. Thao tac nay se chuyen don sang hoan thanh.`
+              : "Chua chon don hang."}
+          </DialogDescription>
+        </DialogHeader>
+        <DialogFooter>
+          <Button
+            type="button"
+            variant="outline"
+            disabled={pending}
+            onClick={() => onOpenChange(false)}
+          >
+            Huy
+          </Button>
+          <Button type="button" disabled={!order || pending} onClick={onConfirm}>
+            <PackageCheckIcon className="size-4" />
+            {pending ? "Dang xac nhan" : "Xac nhan"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   )
 }
 
 export default function OrdersPage() {
   const [page, setPage] = useState(0)
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null)
+  const [confirmOrder, setConfirmOrder] = useState<DonHang | DonHangSummary | null>(null)
   const { isAuthenticated, region } = useAuth()
   const ordersQuery = useOrders(page, PAGE_SIZE)
+  const confirmReceived = useConfirmReceived()
   const orders = ordersQuery.data
+
+  const handleConfirmReceived = () => {
+    if (!confirmOrder) {
+      return
+    }
+
+    confirmReceived.mutate(confirmOrder.maDonHang, {
+      onSuccess: () => setConfirmOrder(null),
+    })
+  }
 
   if (!isAuthenticated) {
     return (
@@ -315,6 +417,11 @@ export default function OrdersPage() {
                 key={order.maDonHang}
                 order={order}
                 onView={setSelectedOrderId}
+                onConfirmReceived={setConfirmOrder}
+                confirmPending={
+                  confirmReceived.isPending &&
+                  confirmReceived.variables === order.maDonHang
+                }
               />
             ))}
           </div>
@@ -352,11 +459,27 @@ export default function OrdersPage() {
       <OrderDetailDialog
         maDonHang={selectedOrderId}
         open={Boolean(selectedOrderId)}
+        onConfirmReceived={setConfirmOrder}
+        confirmPending={
+          confirmReceived.isPending &&
+          confirmReceived.variables === selectedOrderId
+        }
         onOpenChange={(open) => {
           if (!open) {
             setSelectedOrderId(null)
           }
         }}
+      />
+      <ConfirmReceivedDialog
+        order={confirmOrder}
+        open={Boolean(confirmOrder)}
+        pending={confirmReceived.isPending}
+        onOpenChange={(open) => {
+          if (!open && !confirmReceived.isPending) {
+            setConfirmOrder(null)
+          }
+        }}
+        onConfirm={handleConfirmReceived}
       />
     </PageContainer>
   )

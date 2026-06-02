@@ -67,3 +67,88 @@ export interface ThongKeDoanhThu {
   theoVung: DoanhThuTheoVung[]
   toanHeThong: DoanhThuToanHeThong
 }
+
+export interface DoanhThuTheoThang {
+  siteNguon: string
+  nam: number
+  thang: number
+  maKho: string | null
+  tenKho: string
+  doanhThu: number
+}
+
+export interface SanPhamBanChay {
+  maSP: string
+  tenSP: string
+  tongSoLuongBan: number
+  tongDoanhThu: number
+}
+
+export interface DonHangNhieuKho {
+  maDonHang: string
+  soKhoXuat: number
+  danhSachKhoXuat: string
+}
+
+export type TrangThaiDH =
+  | "pending"
+  | "processing"
+  | "shipping"
+  | "completed"
+  | "cancelled"
+
+export type TrangThaiTT = "waiting_cod" | "paid" | "failed" | "cancelled"
+
+export interface AdminOrderItem {
+  siteNguon: string
+  maDonHang: string
+  maND: string
+  ngayDat: string
+  hoTenNguoiNhan: string
+  soDienThoaiNhan: string
+  maKhuVucXuLi: string
+  tongTien: number
+  phuongThucTT: string
+  trangThaiTT: TrangThaiTT
+  trangThaiDH: TrangThaiDH
+}
+
+export interface AdminOrderChiTiet {
+  maCTDH: string
+  maSP: string
+  tenSP: string
+  soLuong: number
+  donGia: number
+  thanhTien: number
+}
+
+export interface AdminOrderDetail extends AdminOrderItem {
+  diaChiGiao: string
+  ghiChu?: string
+  chiTiet: AdminOrderChiTiet[]
+}
+
+export interface AdminOrderPage {
+  items: AdminOrderItem[]
+  page: number
+  size: number
+  totalElements: number
+  totalPages: number
+  last: boolean
+}
+
+export interface AdminOrderFilter {
+  siteNguon?: string
+  trangThaiDH?: string
+  trangThaiTT?: string
+  tuNgay?: string
+  denNgay?: string
+  page?: number
+  size?: number
+}
+
+export interface UpdateOrderStatusBody {
+  siteNguon: string
+  trangThaiDH?: string | null
+  trangThaiTT?: string | null
+}

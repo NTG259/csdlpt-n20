@@ -31,6 +31,7 @@ public class JwtService {
         claims.put("userId", user.getMaND().toString());
         claims.put("maKhuVuc", user.getKhuVuc() == null ? null : user.getKhuVuc().getMaKhuVuc());
         claims.put("vaiTro", user.getVaiTro().name());
+        claims.put("maKhoPhuTrach", user.getMaKhoPhuTrach());
 
         Instant now = Instant.now();
         Instant expiration = now.plusMillis(expirationMs);
@@ -68,6 +69,22 @@ public class JwtService {
     public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
         Claims claims = extractAllClaims(token);
         return claimsResolver.apply(claims);
+    }
+
+    public String extractUserId(String token) {
+        return extractClaim(token, claims -> claims.get("userId", String.class));
+    }
+
+    public String extractMaKhuVuc(String token) {
+        return extractClaim(token, claims -> claims.get("maKhuVuc", String.class));
+    }
+
+    public String extractVaiTro(String token) {
+        return extractClaim(token, claims -> claims.get("vaiTro", String.class));
+    }
+
+    public String extractMaKhoPhuTrach(String token) {
+        return extractClaim(token, claims -> claims.get("maKhoPhuTrach", String.class));
     }
 
     private boolean isTokenExpired(String token) {

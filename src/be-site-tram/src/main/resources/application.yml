@@ -33,6 +33,10 @@ jwt:
   secret: ${JWT_SECRET:change-this-secret-key-to-at-least-32-characters}
   expiration-ms: ${JWT_EXPIRATION_MS:86400000}
 
+app:
+  cors:
+    allowed-origin-patterns: ${CORS_ALLOWED_ORIGIN_PATTERNS:*}
+
 logging:
   charset:
     console: UTF-8

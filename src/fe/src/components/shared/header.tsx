@@ -8,6 +8,7 @@ import {
   LogInIcon,
   LogOutIcon,
   PackageSearchIcon,
+  PackageCheckIcon,
   ShieldIcon,
   ShoppingCartIcon,
 } from "lucide-react"
@@ -29,9 +30,11 @@ export function Header() {
   const pathname = usePathname()
   const { user, region, isAuthenticated, logout } = useAuth()
   const isAdminRoute = pathname.startsWith("/admin")
+  const isWarehouseRoute = pathname.startsWith("/warehouse")
   const isAdmin = user?.vaiTro === "ADMIN"
+  const isWarehouseStaff = user?.vaiTro === "WAREHOUSE_STAFF"
 
-  if (isAdminRoute) {
+  if (isAdminRoute || isWarehouseRoute) {
     return null
   }
 
@@ -85,6 +88,18 @@ export function Header() {
                 >
                   <ShieldIcon className="size-4" />
                   Admin
+                </Link>
+              )}
+              {isWarehouseStaff && (
+                <Link
+                  href="/warehouse"
+                  className={cn(
+                    buttonVariants({ variant: "secondary", size: "sm" }),
+                    "gap-2"
+                  )}
+                >
+                  <PackageCheckIcon className="size-4" />
+                  Kho
                 </Link>
               )}
               <div className="flex min-w-0 items-center gap-2 rounded-md border bg-muted/40 px-3 py-1.5 text-sm">

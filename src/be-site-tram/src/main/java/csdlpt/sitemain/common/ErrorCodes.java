@@ -15,6 +15,12 @@ public final class ErrorCodes {
     public static final String ORDER_NOT_FOUND = "ORDER_NOT_FOUND";
     public static final String INVALID_ORDER_STATE = "INVALID_ORDER_STATE";
     public static final String SLIP_NOT_FOUND = "SLIP_NOT_FOUND";
+    public static final String WAREHOUSE_NOT_ASSIGNED = "WAREHOUSE_NOT_ASSIGNED";
+    public static final String WAREHOUSE_SCOPE_DENIED = "WAREHOUSE_SCOPE_DENIED";
+    public static final String INVALID_SLIP_STATUS = "INVALID_SLIP_STATUS";
+    public static final String ORDER_NOT_READY_TO_SHIP = "ORDER_NOT_READY_TO_SHIP";
+    public static final String STOCK_RECORD_NOT_FOUND = "STOCK_RECORD_NOT_FOUND";
+    public static final String DISTRIBUTED_TRANSACTION_ERROR = "DISTRIBUTED_TRANSACTION_ERROR";
     public static final String PAYMENT_NOT_SUPPORTED = "PAYMENT_NOT_SUPPORTED";
     public static final String INTERNAL_ERROR = "INTERNAL_ERROR";
 

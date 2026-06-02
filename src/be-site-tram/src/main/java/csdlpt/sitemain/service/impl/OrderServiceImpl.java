@@ -97,6 +97,39 @@ public class OrderServiceImpl implements OrderService {
         return toResponse(donHang);
     }
 
+    @Override
+    @Transactional
+    public DonHangResponse xacNhanNhanHang(UUID maND, UUID maDonHang) {
+        int updated = donHangRepository.hoanTatDonDangGiao(maDonHang, maND);
+
+        if (updated == 0) {
+            DonHang donHang = donHangRepository.findById(maDonHang)
+                    .orElseThrow(() -> new BusinessException(
+                            ErrorCodes.ORDER_NOT_FOUND,
+                            HttpStatus.NOT_FOUND,
+                            "Khong tim thay don hang"));
+
+            if (!donHang.getMaND().equals(maND)) {
+                throw new BusinessException(
+                        ErrorCodes.ACCESS_DENIED,
+                        HttpStatus.FORBIDDEN,
+                        "Don hang khong thuoc ve ban");
+            }
+
+            throw new BusinessException(
+                    ErrorCodes.INVALID_ORDER_STATE,
+                    HttpStatus.CONFLICT,
+                    "Don khong o trang thai dang giao nen khong the xac nhan");
+        }
+
+        DonHang donHang = donHangRepository.findByIdWithItems(maDonHang)
+                .orElseThrow(() -> new BusinessException(
+                        ErrorCodes.ORDER_NOT_FOUND,
+                        HttpStatus.NOT_FOUND,
+                        "Khong tim thay don hang"));
+        return toResponse(donHang);
+    }
+
     private DonHangSummaryResponse toSummaryResponse(DonHang donHang) {
         return new DonHangSummaryResponse(
                 donHang.getMaDonHang(),

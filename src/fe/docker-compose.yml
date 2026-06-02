@@ -1,0 +1,25 @@
+name: sitemain-frontend
+
+
+services:
+  frontend:
+    image: ${FRONTEND_IMAGE:-sitemain-frontend:latest}
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_MAIN_API_URL: ${NEXT_PUBLIC_MAIN_API_URL}
+        NEXT_PUBLIC_NORTH_API_URL: ${NEXT_PUBLIC_NORTH_API_URL}
+        NEXT_PUBLIC_SOUTH_API_URL: ${NEXT_PUBLIC_SOUTH_API_URL}
+        NEXT_ALLOWED_DEV_ORIGINS: ${NEXT_ALLOWED_DEV_ORIGINS:-localhost,*.localhost,127.0.0.1,0.0.0.0,host.docker.internal,100.*.*.*,**.ts.net}
+        NEXT_IMAGE_ALLOW_LOCAL_IP: ${NEXT_IMAGE_ALLOW_LOCAL_IP:-true}
+    container_name: ${FRONTEND_CONTAINER_NAME:-sitemain-frontend}
+    environment:
+      NODE_ENV: production
+      HOSTNAME: 0.0.0.0
+      PORT: 3000
+    ports:
+      - "${FRONTEND_PORT:-3000}:3000"
+    restart: unless-stopped
+
+

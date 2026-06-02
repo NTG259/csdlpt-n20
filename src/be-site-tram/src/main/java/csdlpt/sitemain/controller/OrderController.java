@@ -73,4 +73,16 @@ public class OrderController {
     ) {
         return ResponseEntity.ok(ApiResponse.ok(orderService.getMyOrderDetail(userDetails.getUserId(), maDonHang)));
     }
+
+    @Operation(
+            summary = "Xac nhan da nhan hang",
+            description = "Nguoi mua xac nhan don dang giao, chuyen shipping sang completed; COD chot sang paid.")
+    @PostMapping("/{maDonHang}/xac-nhan-nhan-hang")
+    public ResponseEntity<ApiResponse<DonHangResponse>> xacNhanNhanHang(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @PathVariable("maDonHang") UUID maDonHang
+    ) {
+        DonHangResponse response = orderService.xacNhanNhanHang(userDetails.getUserId(), maDonHang);
+        return ResponseEntity.ok(ApiResponse.ok("Xac nhan nhan hang thanh cong", response));
+    }
 }

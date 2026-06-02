@@ -59,6 +59,18 @@ export const mainApiClient = {
       next: options?.next,
     }),
 
+  patch: <T>(path: string, body: unknown, options?: MutationOptions) =>
+    apiFetch<T>(path, {
+      method: "PATCH",
+      baseUrl: getMainBaseUrl(),
+      body,
+      token: options?.token,
+      headers: options?.headers,
+      signal: options?.signal,
+      cache: options?.cache,
+      next: options?.next,
+    }),
+
   delete: <T>(path: string, options?: MutationOptions) =>
     apiFetch<T>(path, {
       method: "DELETE",

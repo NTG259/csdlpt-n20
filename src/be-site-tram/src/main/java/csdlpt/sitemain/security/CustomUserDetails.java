@@ -1,6 +1,8 @@
 package csdlpt.sitemain.security;
 
+import csdlpt.sitemain.domain.entity.KhuVuc;
 import csdlpt.sitemain.domain.entity.NguoiDung;
+import csdlpt.sitemain.domain.enums.VaiTro;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
@@ -14,6 +16,33 @@ public class CustomUserDetails implements UserDetails {
 
     public CustomUserDetails(NguoiDung nguoiDung) {
         this.nguoiDung = nguoiDung;
+    }
+
+    public static CustomUserDetails fromTokenClaims(
+            String email,
+            UUID maND,
+            String maKhuVuc,
+            String vaiTro,
+            String maKhoPhuTrach,
+            String hoTen,
+            boolean enabled
+    ) {
+        NguoiDung nguoiDung = new NguoiDung();
+        nguoiDung.setMaND(maND);
+        nguoiDung.setMatKhau("");
+        nguoiDung.setMaKhoPhuTrach(maKhoPhuTrach);
+        nguoiDung.setHoTen(hoTen == null || hoTen.isBlank() ? email : hoTen);
+        nguoiDung.setEmail(email);
+        nguoiDung.setTrangThai(enabled);
+        nguoiDung.setVaiTro(VaiTro.valueOf(vaiTro));
+
+        if (maKhuVuc != null && !maKhuVuc.isBlank()) {
+            KhuVuc khuVuc = new KhuVuc();
+            khuVuc.setMaKhuVuc(maKhuVuc);
+            nguoiDung.setKhuVuc(khuVuc);
+        }
+
+        return new CustomUserDetails(nguoiDung);
     }
 
     public UUID getUserId() {

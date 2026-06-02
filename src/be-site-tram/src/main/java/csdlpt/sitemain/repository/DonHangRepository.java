@@ -6,6 +6,7 @@ import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -31,6 +32,22 @@ public interface DonHangRepository extends JpaRepository<DonHang, UUID> {
               AND dh.maND = :maND
             """)
     Optional<DonHang> findByIdAndMaNDWithItems(
+            @Param("maDonHang") UUID maDonHang,
+            @Param("maND") UUID maND
+    );
+
+    @Modifying(clearAutomatically = true)
+    @Query("""
+            UPDATE DonHang dh
+               SET dh.trangThaiDH = 'completed',
+                   dh.trangThaiTT = CASE
+                       WHEN dh.phuongThucTT = 'COD' AND dh.trangThaiTT = 'waiting_cod'
+                       THEN 'paid' ELSE dh.trangThaiTT END
+             WHERE dh.maDonHang = :maDonHang
+               AND dh.maND = :maND
+               AND dh.trangThaiDH = 'shipping'
+            """)
+    int hoanTatDonDangGiao(
             @Param("maDonHang") UUID maDonHang,
             @Param("maND") UUID maND
     );

@@ -14,4 +14,6 @@ public interface OrderService {
     PageResponse<DonHangSummaryResponse> getMyOrders(UUID maND, Pageable pageable);
 
     DonHangResponse getMyOrderDetail(UUID maND, UUID maDonHang);
+
+    DonHangResponse xacNhanNhanHang(UUID maND, UUID maDonHang);
 }

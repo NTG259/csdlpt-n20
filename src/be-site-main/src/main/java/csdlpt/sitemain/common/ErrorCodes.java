@@ -10,6 +10,8 @@ public final class ErrorCodes {
     public static final String RESOURCE_NOT_FOUND = "RESOURCE_NOT_FOUND";
     public static final String INVALID_REGION = "INVALID_REGION";
     public static final String INTERNAL_ERROR = "INTERNAL_ERROR";
+    public static final String INVALID_PASSWORD = "INVALID_PASSWORD";
+    public static final String CANNOT_DELETE_SELF = "CANNOT_DELETE_SELF";
 
     private ErrorCodes() {
         throw new UnsupportedOperationException("Utility class");
